@@ -4,7 +4,9 @@ import html
 import pprint
 import re
 from html.parser import HTMLParser
-
+from lightning.classification import CDClassifier
+from lightning.classification import LinearSVC
+from lightning.classification import SGDClassifier
 from sklearn.cross_validation import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import confusion_matrix
@@ -248,6 +250,23 @@ if __name__ == "__main__":
     print(forest.score(X_test, y_test))
     print(confusion_matrix(pred2, y_test))
 
+clfs = (CDClassifier(loss="squared_hinge",
+                     penalty="l2",
+                     max_iter=20,
+                     random_state=0),
+
+        LinearSVC(max_iter=20,
+                  random_state=0),
+
+        SGDClassifier(learning_rate="constant",
+                      alpha=1e-3,
+                      max_iter=20,
+                      random_state=0))
+
+for clf in clfs:
+    print clf.__class__.__name__
+    clf.fit(X_train, y_train)
+    print clf.score(X_test, y_test)
 
 
     # print("Performing dimensionality reduction using LSA")
