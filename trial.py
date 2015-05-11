@@ -26,6 +26,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from time import time
 from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.ensemble import RandomForestClassifier
 
 class ReutersParser(HTMLParser):
     """
@@ -240,6 +241,12 @@ if __name__ == "__main__":
     pred = svm.predict(X_test)
     print(svm.score(X_test, y_test))
     print(confusion_matrix(pred, y_test))
+
+    forest = RandomForestClassifier(n_estimators = 100)
+    forest.fit(X_train, y_train)
+    pred2=forest.predict(X_test)
+    print(forest.score(X_test, y_test))
+    print(confusion_matrix(pred2, y_test))
 
 
 

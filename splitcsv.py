@@ -2,10 +2,10 @@ __author__ = 'newuser'
 import twitter
 import numpy as np
 import threading
-api = twitter.Api(consumer_key='fZhoY2TMHIS9ODgw5HjrdppPB',
-                      consumer_secret='dABHXhNz2qA551hcMBcRgDZgRSy0PZ9otgW4BjEuDLYWmiwuZX',
-                      access_token_key='623527276-cstgcL5iD8TSrTW7i9MtcAmaTggZBQHzE2F3Rc51',
-                      access_token_secret='NiyoFAYg5YioOrMwemhEaE7LN6UhrSm96JovuHwv7cyep')
+api = twitter.Api(consumer_key='PbbX32OF5kCVpn42yUzojlUD8',
+                      consumer_secret='6MBXkjmglrNa0v3Ew3bada90R428Kxv8FQbItBiAWyauucTTFi',
+                      access_token_key='623527276-dwIszI9Xt54MG5rtz6cgXE8HAjOeHvL5t9eeGx0u',
+                      access_token_secret='lszKhbwSXdjsZoLQ4vwYPfzIqE9fyHlWRy5URiTKX0VFw')
 print(api.VerifyCredentials())
 # statuses = api.GetUserTimeline(screen_name="Azuremagazine")
 # print [s.text for s in statuses]
@@ -33,7 +33,7 @@ import pandas.io.parsers
 # global data
 # data=pandas.io.parsers.read_csv("/Users/newuser/Downloads/data.1.1.tsv",sep='\t')
 # pd.DataFrame.from_csv
-data = pd.DataFrame(data=rows)
+data = pd.DataFrame(data=rows,index=None,dtype=int)
 file2=open('/Users/newuser/Desktop/CS410/input2.txt','w')
 # print(data[4][1])
 # userid = numpy.array(data[2])
@@ -45,13 +45,15 @@ def insertdata(index):
 
             # nima=api.GetStatus(id=','.join(data[2][i:10*(index+1)]))
             # print(np.array(data[2][i:10*(index+1)]))
-            nima=api.GetStatus(id=data[2][i:10*(index+1)])
-            print(str(nima.text))
-            # file2.write(str(nima.id)+"\t")
-            # file2.write(data[1][index]+"\n")
+            # print(data[2][i:10*(index+1)])
+            nima=api.GetStatus(id=data[2][index])
+            # print(nima.text.encode('utf-8'))
 
-def calculate():
-    for i in xrange(len(data[1])/10+1):
+            file2.write(nima.text.encode('utf-8')+"\t")
+
+
+def calculate(k):
+    for i in xrange(len(data[1])/2*k , len(data[1])/2*(k+1)):
             if i==0:
                 continue
             try:
@@ -59,21 +61,32 @@ def calculate():
             except twitter.TwitterError as cao:
                 print(str(cao))
                 continue
+            file2.write(data[5][i]+"\n")
 
-calculate()
-# class myThread(threading.Thread):
-#     def __init__(self, threadID):
-#         threading.Thread.__init__(self)
-#         self.threadID=threadID
-#     def run(self):
-#         calculate()
+# calculate(0)
+class myThread(threading.Thread):
+    def __init__(self, threadID, k):
+        threading.Thread.__init__(self)
+        self.threadID=threadID
+        self.k=k
+    def run(self):
+        calculate(self.k)
 #
-# thread1=myThread(1)
-# thread2=myThread(2)
+thread1=myThread(1,0)
+thread2=myThread(2,1)
+
+sb=[thread1,thread2]
+for thread in sb:
+    thread.start()
+for thread in sb:
+    thread.join()
 # thread1.start()
 # thread2.start()
+# thread3.start()
+# thread4.start()
 # thread1.join()
 # thread2.join()
+# thread3.join()
 # t1 = threading.Thread(target=calculate, args=(5,))
 # t2 = threading.Thread(target=calculate, args=(8,))
 # t1.start()
