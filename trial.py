@@ -159,11 +159,11 @@ def filter_doc_list_through_topics(topics, docs):
     """
     ref_docs = []
     for d in docs:
-        if d[0] == [] or d[0] == "":
+        if d[d.__len__()-1] == [] or d[d.__len__()-1] == "":
             continue
-        if d[0] in topics:
+        if d[d.__len__()-1] in topics:
 
-                d_tup = (d[0], d[1])
+                d_tup = (d[d.__len__()-1], d[1])
                 ref_docs.append(d_tup)
     return ref_docs
 
@@ -183,10 +183,10 @@ def create_tfidf_training_data(docs):
     corpus = [d[1] for d in docs]
 
     # Create the TF-IDF vectoriser and transform the corpus
-    X=corpus
-    # vectorizer = TfidfVectorizer(min_df=1)
-    #
-    # X = vectorizer.fit_transform(corpus)
+    vectorizer = TfidfVectorizer(min_df=1)
+    #X=corpus
+    X = vectorizer.fit_transform(corpus)
+
     return X, y
 
 def train_svm(X, y):
@@ -203,9 +203,9 @@ if __name__ == "__main__":
     # Create the list of Reuters data and create the parser
     # files = ["/Users/newuser/Downloads/reuters21578/reut2-%03d.sgm" % r for r in range(0, 2)]
     start_time=clock()
-    file="/Users/newuser/Downloads/news"
+    file="/Users/newuser/Desktop/CS410/processraw.txt"
     # parser = ReutersParser()
-
+    import pandas as pd
     # Parse the document and force all generated docs into
     # a list so that it can be printed out to the console
     hehe = []
@@ -213,25 +213,31 @@ if __name__ == "__main__":
     # for d in parser.parse(open(file, 'rb')):
     i=1
     d=[]
-    with open(file,'rb') as f:
-        hehe=[line.strip().decode() for line in f.readlines()]
-        # for line in f.readlines():
-        #     d.append(line)
-        #     if(i%8==0):
-        #         hehe.append(d)
-        #         d=[]
-        #     i=i+1
-    # print(hehe.__len__())
-    # d=[]
-    i=1
-    j=6
+    rows=[]
+    with open(file,'r') as f:
+        hehe=[line.rstrip('\n') for line in f.readlines()]
+    #     for line in f.readlines():
+    #         row=line.rstrip('\n')
+    #         rows.append(row)
+    # data=pd.DataFrame(data=rows)
+    # i=1
+    # j=6
+    # docs=hehe
+    # print(docs)
     docs=[]
-    # for sb in hehe:
-    while(j<=hehe.__len__()-1):
-        docs.append([hehe[j],hehe[i]])
-        i=i+8
-        j=j+8
-    topics=['sport', 'business', 'us', 'health', 'sci&Tech', 'world','entertainment']
+    res=[]
+    for sb in hehe:
+    # while(j<=hehe.__len__()-1):
+            res=sb.split()
+            print(type(res))
+            print(type(sb))
+            joinlater=' '.join(res[k] for k in xrange(1,len(res)))
+            docs.append([res[res.__len__()-1],joinlater])
+            # i=i+8
+            # j=j+8
+    # docs.append(hehe)
+    # topics=['sport', 'business', 'us', 'health', 'sci&Tech', 'world','entertainment']
+    topics=['sport', 'business', 'politics', 'health', 'scitech', 'car','entertainment']
     # Obtain the topic tags and filter docs through it
     # topics = obtain_topic_tags()
 
@@ -244,37 +250,37 @@ if __name__ == "__main__":
     # Make an array of predictions on the test set
     # Output the hit-rate and the confusion matrix for each model
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+        X, y, test_size=0.3, random_state=42
     )
     print(clock()-start_time)
-    # svm = train_svm(X_train, y_train)
-    # print(clock()-start_time)
-    # pred = svm.predict(X_test)
-    # print(svm.score(X_test, y_test))
-    # print(confusion_matrix(pred, y_test))
+    svm = train_svm(X_train, y_train)
+    print(clock()-start_time)
+    pred = svm.predict(X_test)
+    print(svm.score(X_test, y_test))
+    print(confusion_matrix(pred, y_test))
 
     # forest = RandomForestClassifier(n_estimators = 100)
     # forest.fit(X_train, y_train)
     # pred2=forest.predict(X_test)
     # print(forest.score(X_test, y_test))
     # print(confusion_matrix(pred2, y_test))
-
+    #
     from sklearn.grid_search import GridSearchCV
     from sklearn.pipeline import Pipeline
     from sklearn.naive_bayes import MultinomialNB
     from sklearn.feature_extraction.text import TfidfTransformer
     from sklearn.feature_extraction.text import CountVectorizer
-    parameters = {'vect__ngram_range': [(1, 1), (1, 2)],
-             'tfidf__use_idf': (True, False),
-              'clf__alpha': (1e-2, 1e-3),
-    }
-    text_clf=Pipeline([('vect', CountVectorizer()),('tfidf',TfidfTransformer()),('clf',SGDClassifier(loss='hinge',penalty='l2'))])
-    gs_clf = GridSearchCV(text_clf, parameters, n_jobs=3)
-    gs_clf = gs_clf.fit(X_train, y_train)
-
-    best_parameters, score, _ = max(gs_clf.grid_scores_, key=lambda x: x[1])
-    for param_name in sorted(parameters.keys()):
-        print("%s: %r" % (param_name, best_parameters[param_name]))
+    # parameters = {'vect__ngram_range': [(1, 1), (1, 2)],
+    #          'tfidf__use_idf': (True, False),
+    #           'clf__kernel': ('rbf', 'poly'),
+    # }
+    # text_clf=Pipeline([('vect', CountVectorizer()),('tfidf',TfidfTransformer()),('clf',SVC(gamma=0.0))])
+    # gs_clf = GridSearchCV(text_clf, parameters, n_jobs=3)
+    # gs_clf = gs_clf.fit(X_train, y_train)
+    #
+    # best_parameters, score, _ = max(gs_clf.grid_scores_, key=lambda x: x[1])
+    # for param_name in sorted(parameters.keys()):
+    #     print("%s: %r" % (param_name, best_parameters[param_name]))
 
 
 
