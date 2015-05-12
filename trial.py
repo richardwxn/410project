@@ -3,7 +3,11 @@ __author__ = 'newuser'
 import html
 import pprint
 import re
-from html.parser import HTMLParser
+import  time
+from time import clock
+import Cython
+# from html.parser import HTMLParser
+from HTMLParser import HTMLParser
 from lightning.classification import CDClassifier
 from lightning.classification import LinearSVC
 from lightning.classification import SGDClassifier
@@ -45,7 +49,8 @@ class ReutersParser(HTMLParser):
         Initialise the superclass (HTMLParser) and reset the parser.
         Sets the encoding of the SGML files by default to latin-1.
         """
-        html.parser.HTMLParser.__init__(self)
+        # html.parser.HTMLParser.__init__(self)
+        HTMLParser.__init__(self)
         self._reset()
         self.encoding = encoding
 
@@ -178,10 +183,10 @@ def create_tfidf_training_data(docs):
     corpus = [d[1] for d in docs]
 
     # Create the TF-IDF vectoriser and transform the corpus
-
-    vectorizer = TfidfVectorizer(min_df=1)
-
-    X = vectorizer.fit_transform(corpus)
+    X=corpus
+    # vectorizer = TfidfVectorizer(min_df=1)
+    #
+    # X = vectorizer.fit_transform(corpus)
     return X, y
 
 def train_svm(X, y):
@@ -197,6 +202,7 @@ def train_svm(X, y):
 if __name__ == "__main__":
     # Create the list of Reuters data and create the parser
     # files = ["/Users/newuser/Downloads/reuters21578/reut2-%03d.sgm" % r for r in range(0, 2)]
+    start_time=clock()
     file="/Users/newuser/Downloads/news"
     # parser = ReutersParser()
 
@@ -232,6 +238,7 @@ if __name__ == "__main__":
     ref_docs = filter_doc_list_through_topics(topics, docs)
     # Vectorise and TF-IDF transform the corpus
     X, y = create_tfidf_training_data(ref_docs)
+    print(clock()-start_time)
      # Create the training-test split of the data
     # Create and train the Support Vector Machine
     # Make an array of predictions on the test set
@@ -239,34 +246,58 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
-    svm = train_svm(X_train, y_train)
-    pred = svm.predict(X_test)
-    print(svm.score(X_test, y_test))
-    print(confusion_matrix(pred, y_test))
+    print(clock()-start_time)
+    # svm = train_svm(X_train, y_train)
+    # print(clock()-start_time)
+    # pred = svm.predict(X_test)
+    # print(svm.score(X_test, y_test))
+    # print(confusion_matrix(pred, y_test))
 
-    forest = RandomForestClassifier(n_estimators = 100)
-    forest.fit(X_train, y_train)
-    pred2=forest.predict(X_test)
-    print(forest.score(X_test, y_test))
-    print(confusion_matrix(pred2, y_test))
+    # forest = RandomForestClassifier(n_estimators = 100)
+    # forest.fit(X_train, y_train)
+    # pred2=forest.predict(X_test)
+    # print(forest.score(X_test, y_test))
+    # print(confusion_matrix(pred2, y_test))
 
-clfs = (CDClassifier(loss="squared_hinge",
-                     penalty="l2",
-                     max_iter=20,
-                     random_state=0),
+    from sklearn.grid_search import GridSearchCV
+    from sklearn.pipeline import Pipeline
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.feature_extraction.text import TfidfTransformer
+    from sklearn.feature_extraction.text import CountVectorizer
+    parameters = {'vect__ngram_range': [(1, 1), (1, 2)],
+             'tfidf__use_idf': (True, False),
+              'clf__alpha': (1e-2, 1e-3),
+    }
+    text_clf=Pipeline([('vect', CountVectorizer()),('tfidf',TfidfTransformer()),('clf',SGDClassifier(loss='hinge',penalty='l2'))])
+    gs_clf = GridSearchCV(text_clf, parameters, n_jobs=3)
+    gs_clf = gs_clf.fit(X_train, y_train)
 
-        LinearSVC(max_iter=20,
-                  random_state=0),
+    best_parameters, score, _ = max(gs_clf.grid_scores_, key=lambda x: x[1])
+    for param_name in sorted(parameters.keys()):
+        print("%s: %r" % (param_name, best_parameters[param_name]))
 
-        SGDClassifier(learning_rate="constant",
-                      alpha=1e-3,
-                      max_iter=20,
-                      random_state=0))
 
-for clf in clfs:
-    print clf.__class__.__name__
-    clf.fit(X_train, y_train)
-    print clf.score(X_test, y_test)
+
+
+
+    # clfs = (CDClassifier(loss="squared_hinge",
+    #                      penalty="l2",
+    #                      max_iter=20,
+    #                      random_state=0),
+    #
+    #         LinearSVC(max_iter=20,
+    #                   random_state=0),
+    #
+    #         SGDClassifier(learning_rate="constant",
+    #                       alpha=1e-3,
+    #                       max_iter=20,
+    #                       random_state=0))
+    #
+    # for clf in clfs:
+    #     print(clf.__class__.__name__)
+    #     clf.fit(X_train, y_train)
+    #     print(clf.score(X_test, y_test))
+
 
 
     # print("Performing dimensionality reduction using LSA")

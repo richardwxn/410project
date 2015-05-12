@@ -6,8 +6,8 @@ file2=open('/Users/newuser/Desktop/CS410/input3.txt','a')
 try:
     tso = TwitterSearchOrder() # create a TwitterSearchOrder object
     tso2=TwitterSearchOrder()
-    tso.set_keywords(['stock'])
-    tso2.set_keywords(['economy'])
+    tso.set_keywords(['politics'])
+    tso2.set_keywords(['government'])
     tso.set_language('en')# let's define all words we would like to have a look for # we want to see German tweets only
     # tso.set_result_type('popular')
     tso2.set_language('en')
@@ -33,12 +33,12 @@ try:
         counter += 1 # increase counter
         if counter >= sleep_at: # it's time to apply the delay
             sleeptime+=1
-            if sleeptime>3:
+            if sleeptime>5:
                 break
             counter = 0
             time.sleep(sleep_for)
     for settweet in s:
-        file2.write( '%s' % ( settweet.strip('\n').encode('utf-8') )+'\t'+'business'+'\n')
+        file2.write( '%s' % ( settweet.strip('\n').encode('utf-8') )+'\t'+'politics'+'\n')
         # file2.write('\n')
     time.sleep(sleep_for)
     counter=0
@@ -49,12 +49,12 @@ try:
         counter += 1 # increase counter
         if counter >= sleep_at: # it's time to apply the delay
             sleeptime+=1
-            if sleeptime>3:
+            if sleeptime>5:
                 break
             counter = 0
             time.sleep(sleep_for)
     for tweet in sb:
-        file2.write( '%s' % ( tweet.strip('\n').encode('utf-8') )+'\t'+'business'+'\n')
+        file2.write( '%s' % ( tweet.strip('\n').encode('utf-8') )+'\t'+'politics'+'\n')
         # file2.write('\n')
 
 except TwitterSearchException as e: # take care of all those ugly errors if there are some
